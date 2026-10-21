@@ -35,6 +35,28 @@ const checks = {
 
 console.log('상품 데이터 구조 검사:', checks);
 
+const jsonLdBlocks = [
+  ...html.matchAll(
+    /<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+  )
+];
+
+console.log('JSON-LD 블록 수:', jsonLdBlocks.length);
+
+for (const [index, match] of jsonLdBlocks.entries()) {
+  try {
+    const data = JSON.parse(match[1]);
+    const items = Array.isArray(data) ? data : [data];
+
+    console.log(
+      `JSON-LD ${index + 1} 유형:`,
+      items.map(item => item['@type'] || '유형 없음')
+    );
+  } catch {
+    console.log(`JSON-LD ${index + 1}: 파싱 실패`);
+  }
+}
+
 } catch (error) {
   console.error('수집 테스트 실패:', error.message);
   process.exitCode = 1;
