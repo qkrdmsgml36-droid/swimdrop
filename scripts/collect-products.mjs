@@ -20,10 +20,20 @@ let completed = false;
 
 const writer = db.bulkWriter();
 
+
 writer.onWriteError(error => {
+  if (
+    error.code === 6 ||
+    error.code === 'already-exists'
+  ) {
+    return false;
+  }
+
   console.error('저장 오류:', error.message);
+
   return error.failedAttempts < 3;
 });
+
 
 const pending = [];
 
