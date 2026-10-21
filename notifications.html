@@ -7,7 +7,7 @@
 <p class="hint">아이폰: Safari에서 공유 → 홈 화면에 추가 → 홈 화면에 설치된 앱으로 접속한 뒤 알림을 허용하세요(iOS 16.4 이상). 브라우저·OS에 따라 지원이 다릅니다.</p><p><a href="./index.html">← 스윔드롭 메인</a> · <a href="./instagram.html">드롭 캘린더</a></p></main>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script><script src="./firebase-config.js"></script>
 <script>
-const BRANDS=['나이키','졸린','제이드','키로우','풀타임','르망고'];const TYPES=['신상 예고','판매 시작','재입고'];
+const BRANDS=['나이키','졸린','제이드','키로우','풀타임','르망고','펑키타','펑키트렁크','아레나','스피도','센티'];
 const $=id=>document.getElementById(id);const status=s=>$('status').textContent=s;
 function draw(id,items){$(id).innerHTML=items.map(s=>`<label><input type="checkbox" value="${s}" checked> ${s}</label>`).join('')}
 function selected(id){return [...$(id).querySelectorAll('input:checked')].map(x=>x.value)}
