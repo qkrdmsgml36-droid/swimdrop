@@ -62,3 +62,34 @@ for (const [index, match] of jsonLdBlocks.entries()) {
   process.exitCode = 1;
 }
   
+const nextScripts = [
+  ...html.matchAll(
+    /<script\b[^>]*id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/gi
+  )
+];
+
+const flightChunks = [
+  ...html.matchAll(
+    /self\.__next_f\.push\(/g
+  )
+];
+
+console.log('Next.js 데이터 블록:', nextScripts.length);
+console.log('Next.js Flight 청크:', flightChunks.length);
+
+const keywords = [
+  'productName',
+  'productList',
+  'products',
+  'price',
+  '재입고',
+  '신상품'
+];
+
+for (const keyword of keywords) {
+  console.log(
+    `키워드 ${keyword}:`,
+    html.includes(keyword) ? '발견' : '없음'
+  );
+}
+
