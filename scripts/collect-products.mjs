@@ -25,6 +25,16 @@ const uniqueLinks = [...new Set(productLinks)];
 console.log('고유 상품 링크:', uniqueLinks.length, '개');
 console.log('상품 링크 샘플:', uniqueLinks.slice(0, 5));
 
+const checks = {
+  shopifyProducts: html.includes('products.json'),
+  jsonLd: html.includes('application/ld+json'),
+  nextData: html.includes('__NEXT_DATA__'),
+  productSchema: html.includes('"@type":"Product"'),
+  productWord: html.includes('상품명')
+};
+
+console.log('상품 데이터 구조 검사:', checks);
+
 } catch (error) {
   console.error('수집 테스트 실패:', error.message);
   process.exitCode = 1;
