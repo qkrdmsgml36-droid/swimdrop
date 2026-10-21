@@ -17,5 +17,10 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Test product collection
+      - name: Install Firebase Admin
+        run: npm install --no-save firebase-admin@13
+
+      - name: Collect and save products
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: node scripts/collect-products.mjs
