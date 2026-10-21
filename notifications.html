@@ -1,0 +1,21 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SWIM DROP | 알림 설정</title>
+<style>body{margin:0;background:#f3f7fa;color:#142e42;font:16px system-ui,'Noto Sans KR',sans-serif}.wrap{max-width:640px;margin:24px auto;padding:24px;background:white;border-radius:20px}h1{font-size:23px}.hint{font-size:13px;color:#64788a;line-height:1.6}.group{margin:22px 0}.checks{display:grid;grid-template-columns:1fr 1fr;gap:12px}label{display:flex;gap:8px;align-items:center;padding:9px;border:1px solid #e1e9ef;border-radius:10px}button{border:0;border-radius:10px;padding:13px 18px;background:#102b40;color:white;font-weight:bold;cursor:pointer}button:disabled{opacity:.5}#status{white-space:pre-wrap;background:#eef5f8;padding:12px;border-radius:10px;font-size:14px;line-height:1.6}a{color:#17617d}</style></head><body><main class="wrap"><h1>🔔 SWIM DROP 알림 설정</h1><p class="hint">원하는 브랜드와 알림 종류를 선택하세요. 알림을 켜면 이 기기에 웹 푸시 알림을 등록합니다.</p>
+<div class="group"><h3>관심 브랜드</h3><div class="checks" id="brands"></div></div><div class="group"><h3>알림 종류</h3><div class="checks" id="types"></div></div>
+<div class="group"><label><input id="reminder" type="checkbox" checked> 출시 1시간 전 알림</label></div>
+<button id="enable">🔔 알림 켜기 및 설정 저장</button> <button id="disable" type="button">알림 끄기</button>
+<p id="status" role="status">Firebase 설정 후 알림을 켤 수 있어요.</p>
+<p class="hint">아이폰: Safari에서 공유 → 홈 화면에 추가 → 홈 화면에 설치된 앱으로 접속한 뒤 알림을 허용하세요(iOS 16.4 이상). 브라우저·OS에 따라 지원이 다릅니다.</p><p><a href="./index.html">← 스윔드롭 메인</a> · <a href="./instagram.html">드롭 캘린더</a></p></main>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script><script src="./firebase-config.js"></script>
+<script>
+const BRANDS=['나이키','졸린','제이드','키로우','풀타임','르망고'];const TYPES=['신상 예고','판매 시작','재입고'];
+const $=id=>document.getElementById(id);const status=s=>$('status').textContent=s;
+function draw(id,items){$(id).innerHTML=items.map(s=>`<label><input type="checkbox" value="${s}" checked> ${s}</label>`).join('')}
+function selected(id){return [...$(id).querySelectorAll('input:checked')].map(x=>x.value)}
+draw('brands',BRANDS);draw('types',TYPES);
+let app,auth,db,messaging,swReg;
+const configured=()=>!JSON.stringify(self.SWIMDROP_FIREBASE_CONFIG).includes('REPLACE_')&&!self.SWIMDROP_VAPID_KEY.includes('REPLACE_');
+async function initialize(){if(!configured())throw Error('firebase-config.js에 Firebase 설정과 VAPID 공개키를 입력하세요.');if(!('serviceWorker'in navigator)||!('Notification'in window)||!('PushManager'in window))throw Error('이 브라우저는 웹 푸시를 지원하지 않아요.');if(!firebase.apps.length)firebase.initializeApp(self.SWIMDROP_FIREBASE_CONFIG);app=firebase.app();auth=firebase.auth();db=firebase.firestore();messaging=firebase.messaging();swReg=await navigator.serviceWorker.register('./firebase-messaging-sw.js',{scope:'./'});}
+$('enable').onclick=async()=>{ $('enable').disabled=true;try{await initialize();const permission=await Notification.requestPermission();if(permission!=='granted')throw Error('알림 권한이 허용되지 않았어요. 브라우저 설정에서 허용해 주세요.');let user=auth.currentUser;if(!user)user=(await auth.signInAnonymously()).user;const token=await messaging.getToken({vapidKey:self.SWIMDROP_VAPID_KEY,serviceWorkerRegistration:swReg});if(!token)throw Error('FCM 토큰을 받지 못했어요.');await db.collection('subscribers').doc(user.uid).set({token,brands:selected('brands'),types:selected('types'),reminder:$('reminder').checked,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});status('✅ 알림 구독이 저장됐어요. 새 공지가 서버에 등록되면 해당 조건에 맞춰 발송됩니다.');}catch(e){status('⚠️ '+e.message)}finally{$('enable').disabled=false}};
+$('disable').onclick=async()=>{try{await initialize();const user=auth.currentUser|| (await auth.signInAnonymously()).user;await db.collection('subscribers').doc(user.uid).delete();await messaging.deleteToken();status('알림 구독을 해제했어요.');}catch(e){status('⚠️ '+e.message)}};
+if(!configured())status('⚙️ Firebase 연결 정보가 아직 입력되지 않았어요. 먼저 설정 파일을 수정해야 합니다.');else status('브랜드를 선택한 뒤 알림 켜기를 눌러 주세요.');
+</script></body></html>
