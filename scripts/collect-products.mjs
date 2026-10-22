@@ -17,14 +17,10 @@ const brand = '졸린';
 
 console.log('🏊 SWIM DROP 신상품 자동 감지 시작');
 
-let total = 0;
-let added = 0;
-let existing = 0;
+const products = new Map();
 let completed = false;
 
-const products = new Map();
-
-// 1. 공식몰 상품 목록 전체 수집
+// 1. 공식몰 전체 상품 수집
 for (let page = 1; page <= MAX_PAGES; page++) {
   const response = await fetch(
     `${BASE}/products.json?limit=${LIMIT}&page=${page}`,
@@ -32,7 +28,9 @@ for (let page = 1; page <= MAX_PAGES; page++) {
   );
 
   if (!response.ok) {
-    throw new Error(`페이지 ${page} 오류: ${response.status}`);
+    throw new Error(
+      `페이지 ${page} 오류: ${response.status}`
+    );
   }
 
   const data = await response.json();
@@ -41,7 +39,9 @@ for (let page = 1; page <= MAX_PAGES; page++) {
     throw new Error('상품 데이터 형식 오류');
   }
 
-  console.log(`페이지 ${page}: ${data.products.length}개`);
+  console.log(
+    `페이지 ${page}: ${data.products.length}개`
+  );
 
   if (data.products.length === 0) {
     completed = true;
@@ -61,60 +61,81 @@ for (let page = 1; page <= MAX_PAGES; page++) {
 }
 
 if (!completed) {
-  throw new Error('전체 상품 수집이 완료되지 않았습니다.');
+  throw new Error('전체 상품 수집 미완료');
 }
 
-total = products.size;
-console.log('전체 고유 상품:', total);
-
-// 2. 초기 등록 완료 상태 확인
+// 2. 기존 기준선 확인
 const stateRef = db.collection('collectorState').doc('jolyn');
 const stateSnap = await stateRef.get();
 
-// 이전에 상품을 수집했으므로 첫 실행은
-// 기존 상품 확인 및 기준선 설정용으로 사용
-const baselineMode = !stateSnap.exists;
+if (!stateSnap.exists ||
+    stateSnap.data().initialized !== true) {
+  throw new Error(
+    '기준선이 없습니다. 알림 오발송 방지를 위해 중단합니다.'
+  );
+}
 
-const writer = db.bulkWriter();
+let added = 0;
+let existing = 0;
+let eventsCreated = 0;
 
-writer.onWriteError(error => {
-  if (error.code === 6) return false;
-  return error.failedAttempts < 3;
-});
+// 3. 기존 상품 조회 및 신규 상품 등록
+const productList = [...products.values()];
+const BATCH_SIZE = 100;
 
-const tasks = [];
+for (let i = 0; i < productList.length; i += BATCH_SIZE) {
+  const batch = productList.slice(i, i + BATCH_SIZE);
 
-for (const product of products.values()) {
-  const ref = db.collection('products')
-    .doc(`jolyn_${product.id}`);
+  const refs = batch.map(product =>
+    db.collection('products').doc(`jolyn_${product.id}`)
+  );
 
-  const productData = {
-    brand,
-    source: 'jolyn.com',
-    productId: String(product.id),
-    title: product.title || '',
-    url: `${BASE}/products/${product.handle}`,
-    price: product.variants?.[0]?.price || null,
-    available: product.variants?.some(
-      variant => variant.available
-    ) ?? false,
-    createdAt: product.created_at || null,
-    firstSeenAt:
-      admin.firestore.FieldValue.serverTimestamp()
-  };
+  const snapshots = await db.getAll(...refs);
 
-  tasks.push(
-    writer.create(ref, productData)
-      .then(async () => {
-        added++;
+  for (let j = 0; j < batch.length; j++) {
+    const product = batch[j];
+    const snapshot = snapshots[j];
 
-        if (baselineMode) return;
+    if (snapshot.exists) {
+      existing++;
+      continue;
+    }
 
-        // 새 상품에 대한 알림 이벤트 생성
-        const eventRef = db.collection('events')
-          .doc(`jolyn_new_${product.id}`);
+    const productRef = refs[j];
+    const eventRef = db.collection('events')
+      .doc(`jolyn_new_${product.id}`);
 
-        await eventRef.create({
+    const productData = {
+      brand,
+      source: 'jolyn.com',
+      productId: String(product.id),
+      title: product.title || '',
+      url: `${BASE}/products/${product.handle}`,
+      price: product.variants?.[0]?.price || null,
+      available: product.variants?.some(
+        variant => variant.available
+      ) ?? false,
+      createdAt: product.created_at || null,
+      firstSeenAt:
+        admin.firestore.FieldValue.serverTimestamp()
+    };
+
+    // 상품과 알림 이벤트를 함께 저장
+    const result = await db.runTransaction(async tx => {
+      const [currentProduct, currentEvent] =
+        await Promise.all([
+          tx.get(productRef),
+          tx.get(eventRef)
+        ]);
+
+      if (currentProduct.exists) {
+        return 'existing';
+      }
+
+      tx.create(productRef, productData);
+
+      if (!currentEvent.exists) {
+        tx.create(eventRef, {
           brand,
           type: '신상 예고',
           title: `🏊 졸린 신상품: ${product.title}`,
@@ -124,44 +145,29 @@ for (const product of products.values()) {
           createdAt:
             admin.firestore.FieldValue.serverTimestamp()
         });
-      })
-      .catch(error => {
-        if (error.code === 6 ||
-            error.code === 'already-exists') {
-          existing++;
-          return;
-        }
-        throw error;
-      })
-  );
-}
+      }
 
-await writer.close();
+      return currentEvent.exists
+        ? 'productOnly'
+        : 'created';
+    });
 
-const results = await Promise.allSettled(tasks);
-const failures = results.filter(r => r.status === 'rejected');
+    if (result === 'existing') {
+      existing++;
+    } else {
+      added++;
 
-if (failures.length) {
-  console.error('처리 실패:', failures.length);
-  throw new Error('상품 저장에 실패했습니다.');
-}
-
-// 3. 최초 기준선 설정
-if (baselineMode) {
-  await stateRef.create({
-    initialized: true,
-    initializedAt:
-      admin.firestore.FieldValue.serverTimestamp(),
-    baselineCount: total
-  });
+      if (result === 'created') {
+        eventsCreated++;
+      }
+    }
+  }
 }
 
 console.log('-----------------------');
-console.log('전체 상품:', total);
+console.log('전체 상품:', products.size);
 console.log('신규 저장:', added);
 console.log('기존 상품:', existing);
-console.log('기준선 모드:', baselineMode);
-console.log('알림 이벤트:',
-  baselineMode ? 0 : added
-);
+console.log('기준선 모드: false');
+console.log('알림 이벤트:', eventsCreated);
 console.log('SWIM DROP 수집 완료');
