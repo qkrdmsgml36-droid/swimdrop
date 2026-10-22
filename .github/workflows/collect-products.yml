@@ -1,8 +1,12 @@
 
 name: SWIM DROP Product Collector
 
+
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+
 
 jobs:
   collect:
