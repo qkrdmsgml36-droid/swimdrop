@@ -135,34 +135,7 @@ async function getImage(product) {
   }
 }
 
-  // 목록에 이미지가 없으면 상품 상세 JSON 확인
-  try {
-    const response = await fetch(
-      `${BASE}/products/${encodeURIComponent(product.handle)}.js`,
-      { signal: AbortSignal.timeout(15000) }
-    );
-
-    if (!response.ok) return '';
-
-    const detail = await response.json();
-
-    const image =
-      detail.featured_image ||
-      detail.images?.[0] ||
-      '';
-
-    if (typeof image === 'string') {
-      return image.startsWith('//')
-        ? `https:${image}`
-        : image;
-    }
-
-    return image?.src || '';
-  } catch (error) {
-    console.log(`이미지 조회 실패: ${product.handle}`);
-    return '';
-  }
-}
+ 
 
 // 4. 이미지와 상품 정보 저장
 const items = [];
