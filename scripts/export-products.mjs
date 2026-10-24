@@ -10,14 +10,43 @@ console.log('🏊 SWIM DROP 상품 이미지 수집 시작');
 let completed = false;
 
 for (let page = 1; page <= 40; page++) {
-  const response = await fetch(
-    `${BASE}/products.json?limit=250&page=${page}`,
-    { signal: AbortSignal.timeout(30000) }
-  );
+  
+let response;
 
-  if (!response.ok) {
-    throw new Error(`상품 조회 실패: ${response.status}`);
+for (let attempt = 1; attempt <= 4; attempt++) {
+  try {
+    response = await fetch(
+      `${BASE}/products.json?limit=250&page=${page}`,
+      { signal: AbortSignal.timeout(30000) }
+    );
+
+    if (response.ok) break;
+
+    console.log(
+      `페이지 ${page} 조회 실패: HTTP ${response.status}, 시도 ${attempt}/4`
+    );
+
+    if (![429, 500, 502, 503, 504].includes(response.status)) {
+      throw new Error(`상품 조회 실패: ${response.status}`);
+    }
+  } catch (error) {
+    if (attempt === 4) throw error;
+    console.log(`네트워크 오류: ${error.message}`);
   }
+
+  if (attempt === 4) {
+    throw new Error(`페이지 ${page} 조회 최종 실패`);
+  }
+
+  await new Promise(resolve =>
+    setTimeout(resolve, attempt * 5000)
+  );
+}
+
+if (!response?.ok) {
+  throw new Error(`페이지 ${page} 조회 실패`);
+}
+
 
   const data = await response.json();
   const list = data.products || [];
