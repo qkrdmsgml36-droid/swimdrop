@@ -89,6 +89,12 @@ function normalizeImage(value) {
   }
 
   const url = value.trim().replaceAll('&amp;', '&');
+  
+if (
+  /jolyn-logo|logo-black|placeholder|no-image/i.test(url)
+) {
+  return '';
+}
 
   if (url.startsWith('//')) return `https:${url}`;
   if (url.startsWith('/')) return `${BASE}${url}`;
