@@ -155,9 +155,6 @@ function extractProductImage(html) {
   return '';
 }
 
-const productImage = extractProductImage(html);
-if (productImage) return productImage;
-
 async function getImage(product) {
   const candidates = [
     product.images?.[0],
