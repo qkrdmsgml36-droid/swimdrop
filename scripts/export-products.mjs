@@ -49,19 +49,91 @@ const selected = [...products.values()]
   .slice(0, 60);
 
 // 3. 상품 이미지 찾기
-async function getImage(product) {
-  const direct =
-    product.images?.[0]?.src ||
-    product.image?.src ||
-    product.featured_image?.src ||
-    product.featured_image ||
-    '';
 
-  if (typeof direct === 'string' && direct) {
-    return direct.startsWith('//')
-      ? `https:${direct}`
-      : direct;
+function normalizeImage(value) {
+  if (typeof value === 'object' && value !== null) {
+    value = value.src || value.url || '';
   }
+
+  if (typeof value !== 'string' || !value.trim()) {
+    return '';
+  }
+
+  const url = value.trim().replaceAll('&amp;', '&');
+
+  if (url.startsWith('//')) return `https:${url}`;
+  if (url.startsWith('/')) return `${BASE}${url}`;
+  if (url.startsWith('https://')) return url;
+
+  return '';
+}
+
+async function getImage(product) {
+  const candidates = [
+    product.images?.[0],
+    product.image,
+    product.featured_image,
+    product.variants?.[0]?.featured_image
+  ];
+
+  for (const candidate of candidates) {
+    const url = normalizeImage(candidate);
+    if (url) return url;
+  }
+
+  // 상품 상세 JSON 확인
+  try {
+    const response = await fetch(
+      `${BASE}/products/${encodeURIComponent(product.handle)}.js`,
+      { signal: AbortSignal.timeout(15000) }
+    );
+
+    if (response.ok) {
+      const detail = await response.json();
+
+      const candidates = [
+        detail.featured_image,
+        detail.images?.[0],
+        detail.variants?.[0]?.featured_image
+      ];
+
+      for (const candidate of candidates) {
+        const url = normalizeImage(candidate);
+        if (url) return url;
+      }
+    } else {
+      console.log(`상세 JSON 응답: ${response.status} / ${product.handle}`);
+    }
+  } catch (error) {
+    console.log(`상세 JSON 오류: ${product.handle} / ${error.message}`);
+  }
+
+  // 마지막으로 공식 상품 페이지의 대표 이미지 확인
+  try {
+    const response = await fetch(
+      `${BASE}/products/${encodeURIComponent(product.handle)}`,
+      { signal: AbortSignal.timeout(15000) }
+    );
+
+    if (!response.ok) {
+      console.log(`상품 페이지 응답: ${response.status} / ${product.handle}`);
+      return '';
+    }
+
+    const html = await response.text();
+
+    const match = html.match(
+      /<meta\b[^>]*property=["']og:image(?::secure_url)?["'][^>]*content=["']([^"']+)["'][^>]*>/i
+    ) || html.match(
+      /<meta\b[^>]*content=["']([^"']+)["'][^>]*property=["']og:image(?::secure_url)?["'][^>]*>/i
+    );
+
+    return normalizeImage(match?.[1] || '');
+  } catch (error) {
+    console.log(`상품 페이지 오류: ${product.handle} / ${error.message}`);
+    return '';
+  }
+}
 
   // 목록에 이미지가 없으면 상품 상세 JSON 확인
   try {
