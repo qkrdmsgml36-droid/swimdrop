@@ -103,6 +103,61 @@ if (
   return '';
 }
 
+function extractProductImage(html) {
+  // Shopify 상품 페이지의 구조화된 데이터에서
+  // 상품 이미지 주소 추출
+  const scripts = [
+    ...html.matchAll(
+      /<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+    )
+  ];
+
+  function findProductImage(data) {
+    if (!data || typeof data !== 'object') return '';
+
+    if (Array.isArray(data)) {
+      for (const item of data) {
+        const found = findProductImage(item);
+        if (found) return found;
+      }
+      return '';
+    }
+
+    const type = data['@type'];
+    const isProduct = Array.isArray(type)
+      ? type.includes('Product')
+      : type === 'Product';
+
+    if (isProduct) {
+      const images = Array.isArray(data.image)
+        ? data.image
+        : [data.image];
+
+      for (const image of images) {
+        const url = normalizeImage(image);
+        if (url) return url;
+      }
+    }
+
+    return findProductImage(data['@graph']);
+  }
+
+  for (const match of scripts) {
+    try {
+      const data = JSON.parse(match[1]);
+      const image = findProductImage(data);
+      if (image) return image;
+    } catch {
+      // 구조화된 데이터가 유효하지 않으면 다음 항목 확인
+    }
+  }
+
+  return '';
+}
+
+const productImage = extractProductImage(html);
+if (productImage) return productImage;
+
 async function getImage(product) {
   const candidates = [
     product.images?.[0],
@@ -156,7 +211,8 @@ async function getImage(product) {
     }
 
     const html = await response.text();
-
+    const productImage = extractProductImage(html);
+if (productImage) return productImage; 
     const match = html.match(
       /<meta\b[^>]*property=["']og:image(?::secure_url)?["'][^>]*content=["']([^"']+)["'][^>]*>/i
     ) || html.match(
