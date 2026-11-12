@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-12T16:37:27.982Z",
+  "updatedAt": "2026-11-12T19:32:20.878Z",
   "products": [
     {
       "id": "15297349976237",
@@ -55,6 +55,17 @@
       "available": true,
       "url": "https://jolyn.com/products/accessories-keychain-baywatch",
       "createdAt": "2026-10-21T13:26:52-07:00"
+    },
+    {
+      "id": "15253067890861",
+      "brand": "졸린",
+      "name": "Keychain - Red",
+      "image": "https://cdn.shopify.com/s/files/1/0703/0099/files/jolyn_baywatch_keychain_grey-studio.jpg?v=1794505971",
+      "price": "8.00",
+      "currency": "USD",
+      "available": true,
+      "url": "https://jolyn.com/products/accessories-keychain-baywatch-red-solids",
+      "createdAt": "2026-10-21T13:24:26-07:00"
     },
     {
       "id": "15244352979117",
@@ -649,17 +660,6 @@
       "available": true,
       "url": "https://jolyn.com/products/bikini-tops-holden-slightly-prints",
       "createdAt": "2026-08-18T15:40:00-07:00"
-    },
-    {
-      "id": "8700219457709",
-      "brand": "졸린",
-      "name": "Ellison Crewneck",
-      "image": "",
-      "price": "60.00",
-      "currency": "USD",
-      "available": true,
-      "url": "https://jolyn.com/products/activewear-ellison-crewneck",
-      "createdAt": "2026-08-12T13:20:10-07:00"
     }
   ]
 }
