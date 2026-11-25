@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-24T14:13:01.953Z",
+  "updatedAt": "2026-11-25T00:04:36.002Z",
   "products": [
     {
       "id": "15297349976237",
@@ -11,6 +11,17 @@
       "available": true,
       "url": "https://jolyn.com/products/accessories-towel",
       "createdAt": "2026-10-26T15:22:48-07:00"
+    },
+    {
+      "id": "15297337000109",
+      "brand": "졸린",
+      "name": "Towel - Jolyn Blue",
+      "image": "https://cdn.shopify.com/s/files/1/0703/0099/files/jolyn_unisex_accessory_towel_jolyn-blue_5a-flat-lay_grey-studio_pdp_all.jpg?v=1795480552",
+      "price": "35.00",
+      "currency": "USD",
+      "available": true,
+      "url": "https://jolyn.com/products/accessories-towel-jolyn-blue-solids",
+      "createdAt": "2026-10-26T15:20:19-07:00"
     },
     {
       "id": "15260644016301",
@@ -649,17 +660,6 @@
       "available": true,
       "url": "https://jolyn.com/products/sale-bikini-tops-faye",
       "createdAt": "2026-08-20T10:16:38-07:00"
-    },
-    {
-      "id": "8710431408301",
-      "brand": "졸린",
-      "name": "Holden Bikini Top - Slightly",
-      "image": "https://cdn.shopify.com/s/files/1/0703/0099/files/HOLDEN-SLIBLK-F-053118_7b16010e-afbd-49f8-a078-adffbde5a8ee.jpg?v=1787092979",
-      "price": "24.95",
-      "currency": "USD",
-      "available": true,
-      "url": "https://jolyn.com/products/bikini-tops-holden-slightly-prints",
-      "createdAt": "2026-08-18T15:40:00-07:00"
     }
   ]
 }
