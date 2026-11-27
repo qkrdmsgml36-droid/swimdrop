@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-26T17:16:28.981Z",
+  "updatedAt": "2026-11-27T01:54:51.095Z",
   "products": [
     {
       "id": "15297349976237",
@@ -11,17 +11,6 @@
       "available": true,
       "url": "https://jolyn.com/products/accessories-towel",
       "createdAt": "2026-10-26T15:22:48-07:00"
-    },
-    {
-      "id": "15297337000109",
-      "brand": "졸린",
-      "name": "Towel - Jolyn Blue",
-      "image": "https://cdn.shopify.com/s/files/1/0703/0099/files/jolyn_unisex_accessory_towel_jolyn-blue_5a-flat-lay_grey-studio_pdp_all.jpg?v=1795480552",
-      "price": "35.00",
-      "currency": "USD",
-      "available": true,
-      "url": "https://jolyn.com/products/accessories-towel-jolyn-blue-solids",
-      "createdAt": "2026-10-26T15:20:19-07:00"
     },
     {
       "id": "15260644016301",
@@ -563,6 +552,17 @@
       "createdAt": "2026-09-22T15:58:55-07:00"
     },
     {
+      "id": "8755081937069",
+      "brand": "졸린",
+      "name": "Bolt Goggles - Glacier Blue",
+      "image": "https://cdn.shopify.com/s/files/1/0703/0099/files/jolyn_goggles_glacier.jpg?v=1792694990",
+      "price": "27.00",
+      "currency": "USD",
+      "available": true,
+      "url": "https://jolyn.com/products/accessories-goggles-dusk-mirror-solids",
+      "createdAt": "2026-09-09T09:18:27-07:00"
+    },
+    {
       "id": "8755081904301",
       "brand": "졸린",
       "name": "Lightning Goggles - Dusk Mirror",
@@ -572,6 +572,17 @@
       "available": true,
       "url": "https://jolyn.com/products/accessories-goggles-lightning-dusk-mirror-solids",
       "createdAt": "2026-09-09T09:18:24-07:00"
+    },
+    {
+      "id": "8755081838765",
+      "brand": "졸린",
+      "name": "Bolt Goggles - Dune Mirror",
+      "image": "https://cdn.shopify.com/s/files/1/0703/0099/files/jolyn_goggles_dune.jpg?v=1792694915",
+      "price": "27.00",
+      "currency": "USD",
+      "available": true,
+      "url": "https://jolyn.com/products/accessories-goggles-dune-mirror-solids",
+      "createdAt": "2026-09-09T09:18:21-07:00"
     },
     {
       "id": "8714284728493",
@@ -649,17 +660,6 @@
       "available": true,
       "url": "https://jolyn.com/products/final-sale-bikini-tops-faye",
       "createdAt": "2026-08-20T10:18:03-07:00"
-    },
-    {
-      "id": "8714191503533",
-      "brand": "졸린",
-      "name": "Sale Faye Bikini Top",
-      "image": "",
-      "price": "45.00",
-      "currency": "USD",
-      "available": true,
-      "url": "https://jolyn.com/products/sale-bikini-tops-faye",
-      "createdAt": "2026-08-20T10:16:38-07:00"
     }
   ]
 }
